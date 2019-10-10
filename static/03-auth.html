@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+
+    <style>
+      body { font-family: Tahoma, Geneva, sans-serif; text-align: center; }
+    </style>
+
+    <!-- colyseus.js client -->
+    <script type="text/javascript" src="https://raw.githack.com/colyseus/colyseus.js/master/dist/colyseus.js"></script>
+
+  </head>
+  <body>
+    <h1>
+      <a href="https://github.com/colyseus/colyseus-examples"><img src="https://cdn.jsdelivr.net/gh/colyseus/colyseus@master/media/header.png" height="100" alt="colyseus" /></a>
+    </h1>
+
+    <p>This example shows how to authenticate and retrieve user data before the websocket handshake.</p>
+
+    <p>Open Developer Tools for log messages.</p>
+
+    <p><strong>Commands</strong></p>
+
+    <button onclick="login()">login</button>
+    <button onclick="join_without_token()">try to join without token</button>
+
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '135829507120512',
+                cookie: true,  // enable cookies to allow the server to access
+                // the session
+                xfbml: true,  // parse social plugins on this page
+                version: 'v2.8' // use graph api version 2.8
+            });
+        }
+    </script>
+
+    <script>
+      var host = window.document.location.host.replace(/:.*/, '');
+
+      var client = new Colyseus.Client(location.protocol.replace("http", "ws") + host + (location.port ? ':' + location.port : ''));
+
+      function join_without_token () {
+        // Logged into your app and Facebook.
+        client.joinOrCreate("auth").then(room_instance => {
+            console.log("Joined successfully!"); // never reached!
+
+        }).catch(e => {
+            console.error("Error", e);
+        });
+      }
+
+      function login () {
+          FB.login(function (response) {
+              // Handle the response object, like in statusChangeCallback() in our demo
+              // code.
+              // The response object is returned with a status field that lets the
+              // app know the current login status of the person.
+              // Full docs on the response object can be found in the documentation
+              // for FB.getLoginStatus().
+              if (response.status === 'connected') {
+                  // Logged into your app and Facebook.
+                  client.joinOrCreate("auth", {
+                      accessToken: response.authResponse.accessToken
+                  }).then(room => {
+                      console.log("Joined successfully!");
+                  }).catch(e => {
+                      console.error("Error", e);
+                  });
+
+              } else {
+                  console.log("not connected", response.authResponse);
+              }
+          });
+      }
+    </script>
+
+    <script>
+        // Load the Facebook SDK asynchronously
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+  </body>
+</html>
